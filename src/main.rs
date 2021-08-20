@@ -1,7 +1,5 @@
 use std::io;
 
-fn test() {}
-
 fn main() {
     println!("请输入：");
     let mut msg = String::new();
