@@ -2,6 +2,8 @@ use std::fs;
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::thread;
+use std::time::Duration;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
@@ -18,22 +20,22 @@ fn handle_connection(mut stream: TcpStream) {
     stream.read(&mut buffer).unwrap();
 
     let get = b"GET / HTTP/1.1\r\n";
+    let sleep = b"GET /sleep HTTP/1.1\r\n";
 
-    if buffer.starts_with(get) {
-        // println!("收到：{}", String::from_utf8_lossy(&buffer[..]));
-        // let response = "HTTP/1.1 200 OK\r\n\r\n";
-
-        let contents = fs::read_to_string("hello.html").unwrap();
-        let response = format!("HTTP/1.1 200 OK\r\n\r\n{}", contents);
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
+    // println!("收到：{}", String::from_utf8_lossy(&buffer[..]));
+    let (status_line, filename) = if buffer.starts_with(get) {
+        ("HTTP/1.1 200 OK\r\n\r\n", "hello.html")
+    } else if buffer.starts_with(sleep) {
+        thread::sleep(Duration::from_secs(3));
+        ("HTTP/1.1 200 OK\r\n\r\n", "hello.html")
     } else {
-        let status_line = "HTTP/1.1 400 NOT FOUND\r\n\r\n";
-        let contents = fs::read_to_string("404.html").unwrap();
+        ("HTTP/1.1 400 NOT FOUND\r\n\r\n", "404.html")
+    };
 
-        let response = format!("{}{}", status_line, contents);
+    let contents = fs::read_to_string(filename).unwrap();
 
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
-    }
+    let response = format!("{}{}", status_line, contents);
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
