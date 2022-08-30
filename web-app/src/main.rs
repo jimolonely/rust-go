@@ -1,16 +1,15 @@
-#[macro_use]
-extern crate nickel;
-
-use nickel::Nickel;
+use std::fs::File;
+use std::io::Write;
 
 fn main() {
-    let mut server = Nickel::new();
+    match File::create("foo.txt") {
+        Ok(..) => println!("File created"),
+        Err(..) => println!("Error")
+    }
+}
 
-    server.utilize(router! {
-        get "**" => |_req,_res| {
-            "Hello, Web!"
-        }
-    });
-
-    server.listen("127.0.0.1:6767");
+fn log_something(filename: &'static str, string: &'static [u8; 12])
+{
+    let mut f = File::create(filename)?;
+    f.write_all(string)?
 }
