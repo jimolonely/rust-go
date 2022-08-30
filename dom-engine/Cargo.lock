@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "rust-go"
+name = "dom-engine"
 version = "0.1.0"
